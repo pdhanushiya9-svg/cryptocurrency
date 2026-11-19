@@ -1,0 +1,53 @@
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+import pandas as pd
+import time
+
+driver = webdriver.Chrome()
+
+driver.get("https://coinmarketcap.com")
+time.sleep(8)
+
+crypto_data = []
+
+rows = driver.find_elements(By.CSS_SELECTOR, "tbody tr")
+
+for i in range(len(rows)):
+    try:
+        rows = driver.find_elements(By.CSS_SELECTOR, "tbody tr")
+        cols = rows[i].find_elements(By.TAG_NAME, "td")
+
+        if len(cols) < 8:
+            continue
+
+        name = cols[2].text.split('\n')[0]
+        price = cols[3].text
+        change_24h = cols[4].text
+        market_cap = cols[7].text
+
+        crypto_data.append([
+            name,
+            price,
+            change_24h,
+            market_cap
+        ])
+
+    except Exception:
+        continue
+
+df = pd.DataFrame(
+    crypto_data,
+    columns=[
+        "Coin Name",
+        "Price",
+        "24H Change",
+        "Market Cap"
+    ]
+)
+
+df.to_csv("all_crypto_prices.csv", index=False)
+
+print(f"Total Coins Scraped: {len(df)}")
+print("Data saved successfully!")
+
+driver.quit()
